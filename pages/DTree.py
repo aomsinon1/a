@@ -7,30 +7,19 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
 st.header("Decision Tree for classification")
-df = pd.read_csv("./data/Medicaldataset_converted.csv")
-st.write(df.head(10))
-
-features=['sepal.length', 'sepal.width', 'petal.length', 'petal.width']
-import pandas as pd
-import streamlit as st
-from sklearn import tree
-from sklearn.tree import DecisionTreeClassifier
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-
-st.header("Decision Tree for classification")
 
 # โหลดข้อมูลจากไฟล์ที่ผู้ใช้ส่งมา
 # ใช้ try-except เพื่อจัดการกรณีไม่พบไฟล์
 try:
-    # ชื่อไฟล์จะอยู่ในโฟลเดอร์เดียวกันกับไฟล์ DTree.py
-    df = pd.read_csv("Medicaldataset_converted.csv")
+    # แก้ไขพาธเพื่อให้โค้ดสามารถเข้าถึงไฟล์ในโฟลเดอร์ data/ ได้
+    df = pd.read_csv("../data/Medicaldataset_converted.csv")
     st.write("ข้อมูล 10 แถวแรกของชุดข้อมูล:")
     st.dataframe(df.head(10))
 
     # --- การเตรียมข้อมูลสำหรับโมเดล ---
-    # ตั้งค่าคอลัมน์เป้าหมายในการทำนาย
+    # *สำคัญ*: คุณต้องเปลี่ยนชื่อคอลัมน์เป้าหมาย ('target_column')
+    # ให้ตรงกับคอลัมน์ที่คุณต้องการทำนายในไฟล์ CSV ของคุณ
+    # ตัวอย่าง: สมมติว่าคอลัมน์ที่ต้องการทำนายชื่อว่า 'Result'
     target_column = 'Result'
     
     # ดึงรายชื่อคอลัมน์ที่เป็น feature ทั้งหมดโดยอัตโนมัติ
@@ -79,7 +68,7 @@ try:
     st.pyplot(fig)
 
 except FileNotFoundError:
-    st.error("ไม่พบไฟล์ 'Medicaldataset_converted.csv' กรุณาตรวจสอบว่าไฟล์อยู่ในโฟลเดอร์เดียวกับไฟล์ DTree.py และชื่อไฟล์ถูกต้อง")
+    st.error("ไม่พบไฟล์ 'Medicaldataset_converted.csv' กรุณาตรวจสอบว่าไฟล์อยู่ในโฟลเดอร์ data/ และชื่อไฟล์ถูกต้อง")
 except KeyError as e:
     st.error(f"เกิดข้อผิดพลาด: ไม่พบคอลัมน์ '{e}' ในไฟล์ CSV ของคุณ กรุณาตรวจสอบว่าชื่อคอลัมน์ในโค้ดตรงกับในไฟล์ข้อมูล")
 except Exception as e:
