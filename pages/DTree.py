@@ -7,35 +7,61 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
 st.header("Decision Tree for classification")
-df = pd.read_csv("./data/Medicaldataset_converted.csv")
-st.write(df.head(10))
 
-features=['sepal.length', 'sepal.width', 'petal.length', 'petal.width']
-X = df.drop('variety',axis=1)
-y = df['variety']
+# โหลดข้อมูลจากไฟล์
+# ใช้ try-except เพื่อจัดการกรณีไม่พบไฟล์
+try:
+    df = pd.read_csv("./data/Medicaldataset_converted.csv")
+    st.write("ข้อมูล 10 แถวแรกของชุดข้อมูล:")
+    st.dataframe(df.head(10))
 
-x_train,x_test,y_train,y_test =train_test_split(X,y,test_size=0.3,random_state=200)
-ModelDtree = DecisionTreeClassifier()
-dtree =ModelDtree.fit(x_train,y_train)
-st.subheader("กรุณาป้อนข้อมูลเพื่อพยากรณ์")
-spW=st.number_input('Insert sepalwidth')
-spL=st.number_input('Insert sepallength')
-ptW=st.number_input('Insert petalwidth')
-ptL=st.number_input('Insert petallength')
-if st.button("พยากรณ์"):
-    x_input=[[spW,spL,ptW,ptL]] # ใส่ข้อมูลสำหรับการจำแนกข้อมูล
-    y_predict2=dtree.predict(x_input)
-    st.write(y_predict2)
-    st.button("ไม่พยากรณ์")
-else:
-    st.button("ไม่พยากรณ์")
+    # --- การเตรียมข้อมูลสำหรับโมเดล ---
+    # *สำคัญ*: คุณต้องเปลี่ยนชื่อคอลัมน์เป้าหมาย ('target_column')
+    # ให้ตรงกับคอลัมน์ที่คุณต้องการทำนายในไฟล์ CSV ของคุณ
+    # ตัวอย่าง: สมมติว่าคอลัมน์ที่ต้องการทำนายชื่อว่า 'HeartDisease'
+    target_column = 'HeartDisease'
+    
+    # ดึงรายชื่อคอลัมน์ที่เป็น feature ทั้งหมดโดยอัตโนมัติ
+    features = [col for col in df.columns if col != target_column]
 
-y_predict=dtree.predict(x_test)   
-score = accuracy_score(y_test, y_predict)  
-st.write(f'ความแม่นยำในการพยากรณ์{(score*100)} %')  
+    # กำหนด X (features) และ y (target)
+    X = df[features]
+    y = df[target_column]
 
-fig, ax = plt.subplots(figsize=(12, 8))
-tree.plot_tree(dtree, feature_names=features, ax=ax)
+    # แบ่งข้อมูลเป็นชุดฝึก (training set) และชุดทดสอบ (testing set)
+    x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=200)
 
-st.pyplot(fig)
-#tree.plot_tree(dtree, feature_names=features)
+    # สร้างและฝึกโมเดล Decision Tree
+    ModelDtree = DecisionTreeClassifier()
+    dtree = ModelDtree.fit(x_train, y_train)
+
+    # --- ส่วนรับข้อมูลจากผู้ใช้เพื่อพยากรณ์ ---
+    st.subheader("กรุณาป้อนข้อมูลเพื่อพยากรณ์")
+
+    # สร้างช่องรับข้อมูล (number_input) สำหรับแต่ละ feature โดยอัตโนมัติ
+    user_input = {}
+    for feature in features:
+        user_input[feature] = st.number_input(f'ป้อนค่าสำหรับ: {feature}', value=0.0)
+
+    if st.button("พยากรณ์"):
+        # สร้างรายการค่าที่ผู้ใช้ป้อน เพื่อส่งให้โมเดลทำนาย
+        x_input = [[user_input[feature] for feature in features]]
+        y_predict2 = dtree.predict(x_input)
+        
+        st.write("### ผลการพยากรณ์:")
+        st.write(y_predict2)
+        st.button("ไม่พยากรณ์")
+    else:
+        st.button("ไม่พยากรณ์")
+
+    # --- ส่วนแสดงความแม่นยำและการพล็อตต้นไม้ ---
+    # ทำนายผลจากชุดข้อมูลทดสอบ
+    y_predict = dtree.predict(x_test)
+    score = accuracy_score(y_test, y_predict)
+    st.write(f'ความแม่นยำของโมเดลในการพยากรณ์: **{(score * 100):.2f} %**')
+
+    # พล็อต (แสดงภาพ) Decision Tree
+    fig, ax = plt.subplots(figsize=(12, 8))
+    tree.plot_tree(dtree, feature_names=features, ax=ax, filled=True, rounded=True)
+    st.pyplot(fig)
+
