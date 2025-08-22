@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
 st.header("Decision Tree for classification")
-df = pd.read_csv("./data/iris.csv")
+df = pd.read_csv("./data/Medicaldataset.csv")
 st.write(df.head(10))
 
 features=['sepal.length', 'sepal.width', 'petal.length', 'petal.width']
