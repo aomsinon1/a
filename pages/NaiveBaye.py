@@ -7,7 +7,7 @@ import pandas as pd
 import streamlit as st
 
 # โหลดข้อมูล Iris
-df = pd.read_csv("./data/Medicaldataset.csv")
+df = pd.read_csv("./data/Medicaldataset_converted.csv")
 X = df.drop('variety',axis=1)
 y = df['variety']
 
