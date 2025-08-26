@@ -39,10 +39,23 @@ try:
     # --- ส่วนรับข้อมูลจากผู้ใช้เพื่อพยากรณ์ ---
     st.subheader("กรุณาป้อนข้อมูลเพื่อพยากรณ์")
 
+    # สร้าง dictionary สำหรับแปลงชื่อคอลัมน์เป็นภาษาไทย
+    feature_labels = {
+        'Age': 'อายุ',
+        'Gender': 'เพศ',
+        'Heart rate': 'อัตราการเต้นของหัวใจ',
+        'Systolic blood pressure': 'ความดันโลหิตตัวบน (ซิสโตลิก)',
+        'Diastolic blood pressure': 'ความดันโลหิตตัวล่าง (ไดแอสโตลิก)',
+        'Blood sugar': 'น้ำตาลในเลือด',
+        'CK-MB': 'ครีเอตีนไคเนส เอ็มบี (เอนไซม์บ่งบอกกล้ามเนื้อหัวใจ)',
+        'Troponin': 'โทรโปนิน (โปรตีนบ่งบอกความเสียหายของกล้ามเนื้อหัวใจ)'
+    }
+
     # สร้างช่องรับข้อมูล (number_input) สำหรับแต่ละ feature โดยอัตโนมัติ
     user_input = {}
     for feature in features:
-        user_input[feature] = st.number_input(f'ป้อนค่าสำหรับ: {feature}', value=0.0)
+        label_text = feature_labels.get(feature, feature) 
+        user_input[feature] = st.number_input(f'ป้อนค่าสำหรับ: {label_text}', value=0.0)
 
     if st.button("พยากรณ์"):
         # สร้างรายการค่าที่ผู้ใช้ป้อน เพื่อส่งให้โมเดลทำนาย
