@@ -12,7 +12,7 @@ st.header("Decision Tree for classification")
 # ใช้ try-except เพื่อจัดการกรณีไม่พบไฟล์
 try:
     # แก้ไขพาธเพื่อให้โค้ดสามารถเข้าถึงไฟล์ในโฟลเดอร์ data/ ได้
-    df = pd.read_csv("../data/Medicaldataset_converted.csv")
+    df = pd.read_csv('data/Medicaldataset_converted.csv')
     st.write("ข้อมูล 10 แถวแรกของชุดข้อมูล:")
     st.dataframe(df.head(10))
 
