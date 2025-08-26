@@ -6,17 +6,16 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 st.title('การทำนายข้อมูลโรคหัวใจด้วยเทคนิค K-Nearest Neighbor')
-#st.image("./img/kairung.jpg")
+
 col1, col2 = st.columns(2)
 
 with col1:
-   st.header("")
-   st.image("./img/heart1.jpg")
+    st.header("")
+    st.image("https://i.ibb.co/6b04LzJ/heart1.jpg") # แก้ไขตรงนี้
 
 with col2:
-   st.header("")
-   st.image("./img/heart2.jpg")
-
+    st.header("")
+    st.image("https://i.ibb.co/3sXQ3cQ/heart2.jpg") # แก้ไขตรงนี้
 
 html_7 = """
 <div style="background-color:#33beff;padding:15px;border-radius:15px 15px 15px 15px;border-style:'solid';border-color:black">
@@ -27,30 +26,34 @@ st.markdown(html_7, unsafe_allow_html=True)
 st.markdown("")
 st.markdown("")
 
-st.subheader("ข้อมูลส่วนแรก 10 แถว")
-dt = pd.read_csv("./data/Heart3.csv")
-st.write(dt.head(10))
-st.subheader("ข้อมูลส่วนสุดท้าย 10 แถว")
-st.write(dt.tail(10))
+# Load the new dataset
+try:
+    dt = pd.read_csv("./data/Medicaldataset_converted.csv")
+    st.write("ข้อมูลส่วนแรก 10 แถว")
+    st.dataframe(dt.head(10))
+    st.subheader("ข้อมูลส่วนสุดท้าย 10 แถว")
+    st.dataframe(dt.tail(10))
+except FileNotFoundError:
+    st.error("ไม่พบไฟล์ 'Medicaldataset_converted.csv' กรุณาตรวจสอบว่าไฟล์อยู่ในโฟลเดอร์ data/ และชื่อไฟล์ถูกต้อง")
 
-# สถิติพื้นฐาน
+# Basic statistics
 st.subheader("📈 สถิติพื้นฐานของข้อมูล")
 st.write(dt.describe())
 
-# การเลือกแสดงกราฟตามฟีเจอร์
+# Feature selection for graph visualization
 st.subheader("📌 เลือกฟีเจอร์เพื่อดูการกระจายข้อมูล")
 feature = st.selectbox("เลือกฟีเจอร์", dt.columns[:-1])
 
-# วาดกราฟ boxplot
+# Boxplot
 st.write(f"### 🎯 Boxplot: {feature} แยกตามชนิดของโรคหัวใจ")
 fig, ax = plt.subplots()
-sns.boxplot(data=dt, x='HeartDisease', y=feature, ax=ax)
+sns.boxplot(data=dt, x='Result', y=feature, ax=ax)
 st.pyplot(fig)
 
-# วาด pairplot
+# Pairplot
 if st.checkbox("แสดง Pairplot (ใช้เวลาประมวลผลเล็กน้อย)"):
     st.write("### 🌺 Pairplot: การกระจายของข้อมูลทั้งหมด")
-    fig2 = sns.pairplot(dt, hue='HeartDisease')
+    fig2 = sns.pairplot(dt, hue='Result')
     st.pyplot(fig2)
 
 html_8 = """
@@ -61,35 +64,50 @@ html_8 = """
 st.markdown(html_8, unsafe_allow_html=True)
 st.markdown("")
 
-A1 = st.number_input("กรุณาเลือกข้อมูล A1")
-A2 = st.number_input("กรุณาเลือกข้อมูล A2")
-A3 = st.number_input("กรุณาเลือกข้อมูล A3")
-A4 = st.number_input("กรุณาเลือกข้อมูล A4")
-A5 = st.number_input("กรุณาเลือกข้อมูล A5")
-A6 = st.number_input("กรุณาเลือกข้อมูล A6")
-A7 = st.number_input("กรุณาเลือกข้อมูล A7")
-A8 = st.number_input("กรุณาเลือกข้อมูล A8")
-A9 = st.number_input("กรุณาเลือกข้อมูล A9")
-A10 = st.number_input("กรุณาเลือกข้อมูล A10")
-A11 = st.number_input("กรุณาเลือกข้อมูล A11")
+# Dictionary for mapping English column names to Thai labels
+feature_labels = {
+    'Age': 'อายุ',
+    'Gender': 'เพศ',
+    'Heart rate': 'อัตราการเต้นของหัวใจ',
+    'Systolic blood pressure': 'ความดันโลหิตตัวบน (ซิสโตลิก)',
+    'Diastolic blood pressure': 'ความดันโลหิตตัวล่าง (ไดแอสโตลิก)',
+    'Blood sugar': 'น้ำตาลในเลือด',
+    'CK-MB': 'ครีเอตีนไคเนส เอ็มบี (เอนไซม์บ่งบอกกล้ามเนื้อหัวใจ)',
+    'Troponin': 'โทรโปนิน (โปรตีนบ่งบอกความเสียหายของกล้ามเนื้อหัวใจ)'
+}
+
+# Create input fields dynamically based on the dataset features
+user_input = {}
+for feature in dt.columns[:-1]:
+    label_text = feature_labels.get(feature, feature)
+    if feature == 'Gender':
+        gender_options = {'ชาย': 0, 'หญิง': 1}
+        selected_gender = st.selectbox(
+            f'กรุณาเลือกข้อมูล: {label_text}',
+            options=list(gender_options.keys())
+        )
+        user_input[feature] = gender_options[selected_gender]
+    else:
+        user_input[feature] = st.number_input(f'กรุณาเลือกข้อมูล: {label_text}', value=0.0)
 
 if st.button("ทำนายผล"):
-   #st.write("ทำนาย")
-   #dt = pd.read_csv("./data/iris-3.csv") 
-   X = dt.drop('HeartDisease', axis=1)
-   y = dt.HeartDisease
+    X = dt.drop('Result', axis=1)
+    y = dt.Result
 
-   Knn_model = KNeighborsClassifier(n_neighbors=3)
-   Knn_model.fit(X, y)  
+    Knn_model = KNeighborsClassifier(n_neighbors=3)
+    Knn_model.fit(X, y)
     
-   x_input = np.array([[A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11]])
-   st.write(Knn_model.predict(x_input))
-   
-   out=Knn_model.predict(x_input)
+    x_input = np.array([[user_input[feature] for feature in X.columns]])
 
-   if out[0] == 1:
-    st.image("./img/heart1.jpg")
-   else:
-    st.image("./img/heart2.jpg")
+    prediction = Knn_model.predict(x_input)
+    st.write("### ผลการทำนาย:")
+    
+    if prediction[0] == 1:
+        st.success('ผลการทำนาย: คุณมีความเสี่ยงเป็นโรคหัวใจ')
+        st.image("https://i.ibb.co/6b04LzJ/heart1.jpg") # แก้ไขตรงนี้
+    else:
+        st.success('ผลการทำนาย: คุณไม่มีความเสี่ยงเป็นโรคหัวใจ')
+        st.image("https://i.ibb.co/3sXQ3cQ/heart2.jpg") # แก้ไขตรงนี้
+    
 else:
     st.write("ไม่ทำนาย")
