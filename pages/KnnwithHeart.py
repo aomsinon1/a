@@ -5,17 +5,17 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-st.title('การทำนายข้อมูลโรคหัวใจวายด้วยเทคนิค K-Nearest Neighbor')
+st.title('การทำนายข้อมูลโรคหัวใจด้วยเทคนิค K-Nearest Neighbor')
 
 col1, col2 = st.columns(2)
 
 with col1:
     st.header("")
-    st.image("https://i.ibb.co/6b04LzJ/heart1.jpg") # แก้ไขตรงนี้
+    st.image("https://i.ibb.co/6b04LzJ/heart1.jpg")
 
 with col2:
     st.header("")
-    st.image("https://i.ibb.co/3sXQ3cQ/heart2.jpg") # แก้ไขตรงนี้
+    st.image("https://i.ibb.co/3sXQ3cQ/heart2.jpg")
 
 html_7 = """
 <div style="background-color:#33beff;padding:15px;border-radius:15px 15px 15px 15px;border-style:'solid';border-color:black">
@@ -26,31 +26,31 @@ st.markdown(html_7, unsafe_allow_html=True)
 st.markdown("")
 st.markdown("")
 
-# Load the new dataset
+# โหลดข้อมูลจากไฟล์ที่ผู้ใช้ส่งมา
 try:
     dt = pd.read_csv("./data/Medicaldataset_converted.csv")
     st.write("ข้อมูลส่วนแรก 10 แถว")
     st.dataframe(dt.head(10))
-    st.subheader("ข้อมูลส่วนสุดท้าย 10 แถว")
-    st.dataframe(dt.tail(10))
 except FileNotFoundError:
     st.error("ไม่พบไฟล์ 'Medicaldataset_converted.csv' กรุณาตรวจสอบว่าไฟล์อยู่ในโฟลเดอร์ data/ และชื่อไฟล์ถูกต้อง")
 
-# Basic statistics
-st.subheader("📈 สถิติพื้นฐานของข้อมูล")
-st.write(dt.describe())
+# --- ส่วนนี้คือส่วนที่ถูกเอาออก ---
+# st.subheader("ข้อมูลส่วนสุดท้าย 10 แถว")
+# st.write(dt.tail(10))
+# st.subheader("📈 สถิติพื้นฐานของข้อมูล")
+# st.write(dt.describe())
 
-# Feature selection for graph visualization
+# การเลือกแสดงกราฟตามฟีเจอร์
 st.subheader("📌 เลือกฟีเจอร์เพื่อดูการกระจายข้อมูล")
 feature = st.selectbox("เลือกฟีเจอร์", dt.columns[:-1])
 
-# Boxplot
+# วาดกราฟ boxplot
 st.write(f"### 🎯 Boxplot: {feature} แยกตามชนิดของโรคหัวใจ")
 fig, ax = plt.subplots()
 sns.boxplot(data=dt, x='Result', y=feature, ax=ax)
 st.pyplot(fig)
 
-# Pairplot
+# วาด pairplot
 if st.checkbox("แสดง Pairplot (ใช้เวลาประมวลผลเล็กน้อย)"):
     st.write("### 🌺 Pairplot: การกระจายของข้อมูลทั้งหมด")
     fig2 = sns.pairplot(dt, hue='Result')
@@ -104,10 +104,10 @@ if st.button("ทำนายผล"):
     
     if prediction[0] == 1:
         st.success('ผลการทำนาย: คุณมีความเสี่ยงเป็นโรคหัวใจ')
-        st.image("https://i.ibb.co/6b04LzJ/heart1.jpg") # แก้ไขตรงนี้
+        st.image("https://i.ibb.co/6b04LzJ/heart1.jpg")
     else:
         st.success('ผลการทำนาย: คุณไม่มีความเสี่ยงเป็นโรคหัวใจ')
-        st.image("https://i.ibb.co/3sXQ3cQ/heart2.jpg") # แก้ไขตรงนี้
+        st.image("https://i.ibb.co/3sXQ3cQ/heart2.jpg")
     
 else:
     st.write("ไม่ทำนาย")
