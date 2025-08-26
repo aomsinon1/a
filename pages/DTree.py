@@ -54,8 +54,18 @@ try:
     # สร้างช่องรับข้อมูล (number_input) สำหรับแต่ละ feature โดยอัตโนมัติ
     user_input = {}
     for feature in features:
-        label_text = feature_labels.get(feature, feature) 
-        user_input[feature] = st.number_input(f'ป้อนค่าสำหรับ: {label_text}', value=0.0)
+        label_text = feature_labels.get(feature, feature)
+        if feature == 'Gender':
+            # สำหรับเพศ ให้ใช้ selectbox แทน
+            gender_options = {'ชาย': 0, 'หญิง': 1}
+            selected_gender = st.selectbox(
+                f'ป้อนค่าสำหรับ: {label_text}',
+                options=list(gender_options.keys())
+            )
+            user_input[feature] = gender_options[selected_gender]
+        else:
+            # สำหรับ feature อื่นๆ ที่เป็นตัวเลข ยังคงใช้ number_input
+            user_input[feature] = st.number_input(f'ป้อนค่าสำหรับ: {label_text}', value=0.0)
 
     if st.button("พยากรณ์"):
         # สร้างรายการค่าที่ผู้ใช้ป้อน เพื่อส่งให้โมเดลทำนาย
