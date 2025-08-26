@@ -5,7 +5,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-st.title('การทำนายข้อมูลโรคหัวใจด้วยเทคนิค K-Nearest Neighbor')
+st.title('การทำนายข้อมูลโรคหัวใจวายด้วยเทคนิค K-Nearest Neighbor')
 
 col1, col2 = st.columns(2)
 
