@@ -22,4 +22,3 @@ st.page_link("pages/KnnwithHeart.py", label="โมเดล K-Nearest Neighbors
 st.page_link("pages/NaiveBaye.py", label="โมเดล Naive Bayes 🧠", icon="3️⃣")
 
 st.markdown("---")
-st.markdown("_สร้างด้วย Streamlit และความรัก_ 🥰")
