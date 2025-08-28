@@ -1,118 +1,130 @@
-from sklearn.neighbors import KNeighborsClassifier
-import streamlit as st
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
 import pandas as pd
+import streamlit as st
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 # --- Set Page Config ---
 st.set_page_config(
-    page_title="การทำนายโรคหัวใจด้วย KNN",
+    page_title="การทำนายโรคหัวใจด้วย Naive Bayes",
     page_icon="❤️",
     layout="wide"
 )
 
-# --- Header Section ---
-st.title("❤️ การทำนายโรคหัวใจวายด้วยเทคนิค K-Nearest Neighbor")
+# --- Custom CSS for Styling ---
 st.markdown("""
-แอปพลิเคชันนี้ใช้โมเดล **K-Nearest Neighbor (KNN)** เพื่อทำนายความเสี่ยงโรคหัวใจวายจากข้อมูลสุขภาพของคุณ
+<style>
+    .stApp {
+        background-color: #f0f2f6;
+        color: #333;
+    }
+    .st-emotion-cache-1c7y2n2 {
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .st-emotion-cache-16ajdlt {
+        background-color: #e6f7ff;
+        border-left: 5px solid #1890ff;
+        color: #1890ff;
+    }
+    h1 {
+        color: #e83e8c;
+        text-align: center;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    h2, h3, h4 {
+        color: #004085;
+    }
+    .stButton>button {
+        background-color: #1890ff;
+        color: white;
+        font-weight: bold;
+        border-radius: 8px;
+        border: none;
+        padding: 12px 24px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    .stButton>button:hover {
+        background-color: #40a9ff;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# --- Header Section ---
+st.title("❤️ การทำนายโรคหัวใจวายด้วย Naive Bayes")
+st.markdown("""
+แอปพลิเคชันนี้ใช้โมเดล **Naive Bayes** เพื่อทำนายความเสี่ยงโรคหัวใจวายจากข้อมูลสุขภาพของคุณ
 """)
 st.markdown("---")
 
 # --- Load Data Section ---
-st.subheader("📊 ข้อมูลที่ใช้ในการฝึกโมเดล")
-st.info("โปรดตรวจสอบข้อมูลเพื่อทำความเข้าใจลักษณะของชุดข้อมูล")
 try:
-    dt = pd.read_csv("./data/Medicaldataset_converted.csv")
-    st.write("แสดงข้อมูล 10 แถวแรก:")
-    st.dataframe(dt.head(10))
+    df = pd.read_csv("./data/Medicaldataset_converted.csv")
 except FileNotFoundError:
-    st.error("❌ **ไม่พบไฟล์ 'Medicaldataset_converted.csv'** กรุณาตรวจสอบว่าไฟล์อยู่ในโฟลเดอร์ `data/` และชื่อไฟล์ถูกต้อง")
+    st.error("❌ **ไม่พบไฟล์ 'Medicaldataset_converted.csv'** กรุณาตรวจสอบว่าไฟล์อยู่ในโฟลเดอร์ data/ และชื่อไฟล์ถูกต้อง")
     st.stop()
 
-# --- Visualization Section ---
-st.markdown("---")
-st.subheader("📈 การสำรวจข้อมูล (Data Exploration)")
-st.info("ใช้กราฟด้านล่างเพื่อดูการกระจายของข้อมูลแต่ละฟีเจอร์")
-
-feature = st.selectbox(
-    "เลือกฟีเจอร์เพื่อดูการกระจายข้อมูล", 
-    dt.columns[:-1],
-    help="เลือกฟีเจอร์เพื่อดูว่าค่าของฟีเจอร์นั้นๆ มีการกระจายตัวอย่างไรเมื่อเทียบกับผลลัพธ์ (Result)"
-)
-
-# Boxplot
-st.write(f"#### 🎯 Boxplot: แสดงการกระจายของฟีเจอร์ '{feature}'")
-fig, ax = plt.subplots(figsize=(8, 6))
-sns.boxplot(data=dt, x='Result', y=feature, ax=ax)
-ax.set_title(f'Boxplot ของ {feature} เทียบกับผลลัพธ์', fontsize=16)
-ax.set_xlabel('Result (0: ไม่มี, 1: มี)', fontsize=12)
-ax.set_ylabel(feature, fontsize=12)
-st.pyplot(fig)
-
-# Pairplot (Optional)
-st.markdown("---")
-if st.checkbox("แสดง Pairplot เพื่อดูความสัมพันธ์ของทุกฟีเจอร์ (อาจใช้เวลาโหลดสักครู่)"):
-    st.write("#### 🌺 Pairplot: ความสัมพันธ์ระหว่างฟีเจอร์ทั้งหมด")
-    st.warning("การแสดงกราฟนี้อาจใช้เวลาประมวลผลนาน หากชุดข้อมูลมีขนาดใหญ่")
-    with st.spinner('กำลังสร้าง Pairplot...'):
-        fig2 = sns.pairplot(dt, hue='Result')
-        st.pyplot(fig2)
+# --- Model Training ---
+target_column = 'Result'
+features = [col for col in df.columns if col != target_column]
+X = df[features]
+y = df[target_column]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+clf = GaussianNB()
+clf.fit(X_train, y_train)
 
 # --- Prediction Section ---
-st.markdown("---")
-st.header("🔮 ทำนายผลความเสี่ยงโรคหัวใจวาย")
+st.subheader("🔮 กรุณาป้อนข้อมูลเพื่อพยากรณ์")
 st.info("กรุณาป้อนข้อมูลของคุณในช่องด้านล่างเพื่อรับการทำนาย")
 
-# Dictionary for mapping English column names to Thai labels
+# สร้าง dictionary สำหรับแปลงชื่อคอลัมน์เป็นภาษาไทย
 feature_labels = {
-    'Age': 'อายุ', 'Gender': 'เพศ', 'Heart rate': 'อัตราการเต้นของหัวใจ',
-    'Systolic blood pressure': 'ความดันโลหิตตัวบน (ซิสโตลิก)', 'Diastolic blood pressure': 'ความดันโลหิตตัวล่าง (ไดแอสโตลิก)',
-    'Blood sugar': 'น้ำตาลในเลือด', 'CK-MB': 'ครีเอตีนไคเนส เอ็มบี', 'Troponin': 'โทรโปนิน'
+    'Age': 'อายุ',
+    'Gender': 'เพศ',
+    'Heart rate': 'อัตราการเต้นของหัวใจ',
+    'Systolic blood pressure': 'ความดันโลหิตตัวบน (ซิสโตลิก)',
+    'Diastolic blood pressure': 'ความดันโลหิตตัวล่าง (ไดแอสโตลิก)',
+    'Blood sugar': 'น้ำตาลในเลือด',
+    'CK-MB': 'ครีเอตีนไคเนส เอ็มบี (เอนไซม์บ่งบอกกล้ามเนื้อหัวใจ)',
+    'Troponin': 'โทรโปนิน (โปรตีนบ่งบอกความเสียหายของกล้ามเนื้อหัวใจ)'
 }
 
-# Create input fields using columns for better layout
+# สร้างช่องรับข้อมูล (input fields) สำหรับแต่ละ feature โดยอัตโนมัติ
 user_input = {}
 cols = st.columns(2)
-
-for i, feature in enumerate(dt.columns[:-1]):
+for i, feature in enumerate(features):
     with cols[i % 2]:
         label_text = feature_labels.get(feature, feature)
         if feature == 'Gender':
             gender_options = {'ชาย': 0, 'หญิง': 1}
             selected_gender = st.selectbox(
                 f'กรุณาเลือกข้อมูล: {label_text}',
-                options=list(gender_options.keys()),
-                key=f"input_{feature}"
+                options=list(gender_options.keys())
             )
             user_input[feature] = gender_options[selected_gender]
         else:
             user_input[feature] = st.number_input(
                 f'กรุณาป้อนค่าสำหรับ: **{label_text}**', 
-                value=0, 
+                value=0.0,
                 key=f"input_{feature}"
             )
 
 # Prediction button and result display
 st.markdown("---")
-if st.button("🌟 ทำนายผล", type="primary"):
-    X = dt.drop('Result', axis=1)
-    y = dt.Result
-
-    # Initialize and train the model
-    Knn_model = KNeighborsClassifier(n_neighbors=3)
-    Knn_model.fit(X, y)
+if st.button("🌟 พยากรณ์", type="primary"):
+    # สร้างรายการค่าที่ผู้ใช้ป้อน เพื่อส่งให้โมเดลทำนาย
+    x_input = np.array([[user_input[feature] for feature in features]])
+    y_predict = clf.predict(x_input)
+    st.subheader("✅ ผลการพยากรณ์:")
     
-    # Prepare user input for prediction
-    x_input = np.array([[user_input[feature] for feature in X.columns]])
-
-    # Make a prediction
-    prediction = Knn_model.predict(x_input)
-    st.subheader("✅ ผลการทำนาย:")
-    
-    if prediction[0] == 1:
+    if y_predict[0] == 1:
         st.error('⚠️ **คุณมีความเสี่ยงที่จะเป็นโรคหัวใจวาย**')
         st.markdown("ขอแนะนำให้ปรึกษาแพทย์ผู้เชี่ยวชาญเพื่อยืนยันผลและรับคำแนะนำที่ถูกต้อง")
     else:
         st.success('🟢 **คุณไม่มีความเสี่ยงที่จะเป็นโรคหัวใจวาย**')
         st.markdown("อย่างไรก็ตาม การดูแลสุขภาพอย่างสม่ำเสมอเป็นสิ่งสำคัญ")
+    st.button("ไม่พยากรณ์")
+else:
+    st.button("ไม่พยากรณ์")
