@@ -19,12 +19,16 @@ st.markdown("""
 st.markdown("---")
 
 # --- Image Section ---
-col1, col2 = st.columns(2)
-with col1:
-    st.image("https://i.ibb.co/6b04LzJ/heart1.jpg", caption="ความเสี่ยงสูง", use_column_width=True)
-with col2:
-    st.image("https://i.ibb.co/3sXQ3cQ/heart2.jpg", caption="ความเสี่ยงต่ำ", use_column_width=True)
-
+st.image("https://i.ibb.co/6b04LzJ/heart1.jpg") # <-- This URL is broken
+...
+st.image("https://i.ibb.co/3sXQ3cQ/heart2.jpg") # <-- This URL is broken
+...
+if prediction[0] == 1:
+    st.success('ผลการทำนาย: คุณมีความเสี่ยงเป็นโรคหัวใจ')
+    st.image("https://i.ibb.co/6b04LzJ/heart1.jpg") # <-- This URL is broken
+else:
+    st.success('ผลการทำนาย: คุณไม่มีความเสี่ยงเป็นโรคหัวใจ')
+    st.image("https://i.ibb.co/3sXQ3cQ/heart2.jpg") # <-- This URL is broken
 # --- Data Information Section ---
 st.subheader("📊 ข้อมูลที่ใช้ในการฝึกโมเดล")
 st.info("โปรดตรวจสอบข้อมูลเพื่อทำความเข้าใจลักษณะของชุดข้อมูล")
