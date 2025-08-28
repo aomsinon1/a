@@ -51,10 +51,11 @@ try:
 
     user_input = {}
     with col1:
-        user_input['Age'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Age"]}', min_value=0, max_value=120, value=45)
-        user_input['Heart rate'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Heart rate"]}', min_value=0, value=75)
-        user_input['Systolic blood pressure'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Systolic blood pressure"]}', min_value=0, value=120)
-        user_input['Diastolic blood pressure'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Diastolic blood pressure"]}', min_value=0, value=80)
+        # ใช้ step=1 สำหรับค่าที่เป็นจำนวนเต็ม
+        user_input['Age'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Age"]}', min_value=0, max_value=120, value=45, step=1)
+        user_input['Heart rate'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Heart rate"]}', min_value=0, value=75, step=1)
+        user_input['Systolic blood pressure'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Systolic blood pressure"]}', min_value=0, value=120, step=1)
+        user_input['Diastolic blood pressure'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Diastolic blood pressure"]}', min_value=0, value=80, step=1)
     
     with col2:
         gender_options = {'ชาย': 0, 'หญิง': 1}
@@ -63,7 +64,6 @@ try:
         user_input['Blood sugar'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Blood sugar"]}', min_value=0.0, value=90.0)
         user_input['CK-MB'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["CK-MB"]}', min_value=0.0, value=0.0)
         user_input['Troponin'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Troponin"]}', min_value=0.0, value=0.0)
-
 
     if st.button("พยากรณ์ผล", type="primary"):
         x_input = [[user_input[feature] for feature in features]]
@@ -81,7 +81,9 @@ try:
     st.subheader("📈 ประสิทธิภาพของโมเดล")
     y_predict = dtree.predict(x_test)
     score = accuracy_score(y_test, y_predict)
-    st.metric(label="ความแม่นยำของโมเดล (Accuracy Score)", value=f"{score * 100:.2f} %")
+    
+    # แก้ไขส่วนนี้เพื่อแสดงค่าเป็นจำนวนเต็ม
+    st.metric(label="ความแม่นยำของโมเดล (Accuracy Score)", value=f"{int(score * 100)} %")
 
     st.subheader("🌳 แผนผัง Decision Tree")
     fig, ax = plt.subplots(figsize=(20, 15))
