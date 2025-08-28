@@ -19,16 +19,7 @@ st.markdown("""
 st.markdown("---")
 
 # --- Image Section ---
-st.image("https://i.ibb.co/6b04LzJ/heart1.jpg") # <-- This URL is broken
-...
-st.image("https://i.ibb.co/3sXQ3cQ/heart2.jpg") # <-- This URL is broken
-...
-if prediction[0] == 1:
-    st.success('ผลการทำนาย: คุณมีความเสี่ยงเป็นโรคหัวใจ')
-    st.image("https://i.ibb.co/6b04LzJ/heart1.jpg") # <-- This URL is broken
-else:
-    st.success('ผลการทำนาย: คุณไม่มีความเสี่ยงเป็นโรคหัวใจ')
-    st.image("https://i.ibb.co/3sXQ3cQ/heart2.jpg") # <-- This URL is broken
+
 # --- Data Information Section ---
 st.subheader("📊 ข้อมูลที่ใช้ในการฝึกโมเดล")
 st.info("โปรดตรวจสอบข้อมูลเพื่อทำความเข้าใจลักษณะของชุดข้อมูล")
