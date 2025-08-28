@@ -1,116 +1,99 @@
-from sklearn.neighbors import KNeighborsClassifier
-import streamlit as st
 import pandas as pd
-import numpy as np
-import seaborn as sns
+import streamlit as st
+from sklearn import tree
+from sklearn.tree import DecisionTreeClassifier
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
-st.set_page_config(
-    page_title="การทำนายโรคหัวใจด้วย KNN",
-    page_icon="❤️",
-    layout="wide"
-)
+st.set_page_config(page_title="การทำนายโรคหัวใจวายDtree", page_icon="❤️")
 
 # --- Header Section ---
-st.title("❤️ การทำนายโรคหัวใจวายด้วยเทคนิค K-Nearest Neighbor")
-st.markdown("""
-แอปพลิเคชันนี้ใช้โมเดล **K-Nearest Neighbor (KNN)** เพื่อทำนายความเสี่ยงโรคหัวใจวายจากข้อมูลสุขภาพของคุณ
-""")
+st.title("🩺 การพยากรณ์โรคหัวใจวายด้วย Decision Tree")
 st.markdown("---")
+st.markdown("แอปพลิเคชันนี้ใช้โมเดล **Decision Tree** ในการวิเคราะห์ข้อมูลและทำนายความเสี่ยงของภาวะหัวใจวาย")
 
-# --- Image Section ---
-
-# --- Data Information Section ---
+# --- Data Loading Section ---
 st.subheader("📊 ข้อมูลที่ใช้ในการฝึกโมเดล")
-st.info("โปรดตรวจสอบข้อมูลเพื่อทำความเข้าใจลักษณะของชุดข้อมูล")
+
 try:
-    dt = pd.read_csv("./data/Medicaldataset_converted.csv")
-    st.write("แสดงข้อมูล 10 แถวแรก:")
-    st.dataframe(dt.head(10))
+    df = pd.read_csv('data/Medicaldataset_converted.csv')
+    st.info("✅ โหลดข้อมูลจากไฟล์ **'Medicaldataset_converted.csv'** เรียบร้อยแล้ว")
+    st.write("ตัวอย่าง 10 แถวแรกของชุดข้อมูล:")
+    st.dataframe(df.head(10))
+
+    # --- Data Preparation ---
+    target_column = 'Result'
+    features = [col for col in df.columns if col != target_column]
+    X = df[features]
+    y = df[target_column]
+    x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=200)
+
+    # --- Model Training ---
+    with st.spinner('กำลังฝึกโมเดล Decision Tree...'):
+        ModelDtree = DecisionTreeClassifier()
+        dtree = ModelDtree.fit(x_train, y_train)
+    st.success("✨ ฝึกโมเดลสำเร็จ!")
+
+    # --- User Input Section ---
+    st.subheader("✍️ ป้อนข้อมูลเพื่อพยากรณ์")
+    st.markdown("---")
+
+    col1, col2 = st.columns(2)
+    
+    feature_labels = {
+        'Age': 'อายุ', 'Gender': 'เพศ', 'Heart rate': 'อัตราการเต้นของหัวใจ', 
+        'Systolic blood pressure': 'ความดันโลหิตตัวบน (ซิสโตลิก)', 
+        'Diastolic blood pressure': 'ความดันโลหิตตัวล่าง (ไดแอสโตลิก)', 
+        'Blood sugar': 'น้ำตาลในเลือด', 'CK-MB': 'ครีเอตีนไคเนส เอ็มบี', 
+        'Troponin': 'โทรโปนิน'
+    }
+
+    user_input = {}
+    with col1:
+        # ใช้ step=1 สำหรับค่าที่เป็นจำนวนเต็มและตั้งค่าเริ่มต้นเป็น 0
+        user_input['Age'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Age"]}', min_value=0, max_value=120, value=0, step=1)
+        user_input['Heart rate'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Heart rate"]}', min_value=0, value=0, step=1)
+        user_input['Systolic blood pressure'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Systolic blood pressure"]}', min_value=0, value=0, step=1)
+        user_input['Diastolic blood pressure'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Diastolic blood pressure"]}', min_value=0, value=0, step=1)
+    
+    with col2:
+        gender_options = {'ชาย': 0, 'หญิง': 1}
+        selected_gender = st.selectbox(f'ป้อนค่าสำหรับ: {feature_labels["Gender"]}', options=list(gender_options.keys()))
+        user_input['Gender'] = gender_options[selected_gender]
+        # แก้ไขให้ไม่มีทศนิยมโดยเปลี่ยน min_value, value และเพิ่ม step=1
+        user_input['Blood sugar'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Blood sugar"]}', min_value=0, value=0, step=1)
+        user_input['CK-MB'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["CK-MB"]}', min_value=0, value=0, step=1)
+        user_input['Troponin'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Troponin"]}', min_value=0, value=0, step=1)
+
+    if st.button("พยากรณ์ผล", type="primary"):
+        x_input = [[user_input[feature] for feature in features]]
+        y_predict2 = dtree.predict(x_input)
+        
+        st.write("---")
+        st.subheader("### 💡 ผลการพยากรณ์:")
+        if y_predict2[0] == 1:
+            st.error("⚠️ **มีความเสี่ยงสูงที่จะเป็นโรคหัวใจวาย**")
+        else:
+            st.success("🟢 **ความเสี่ยงในการเป็นโรคหัวใจวายอยู่ในระดับต่ำ**")
+
+    # --- Model Performance & Visualization ---
+    st.markdown("---")
+    st.subheader("📈 ประสิทธิภาพของโมเดล")
+    y_predict = dtree.predict(x_test)
+    score = accuracy_score(y_test, y_predict)
+    
+    # แก้ไขส่วนนี้เพื่อแสดงค่าเป็นจำนวนเต็ม
+    st.metric(label="ความแม่นยำของโมเดล (Accuracy Score)", value=f"{int(score * 100)} %")
+
+    st.subheader("🌳 แผนผัง Decision Tree")
+    fig, ax = plt.subplots(figsize=(20, 15))
+    tree.plot_tree(dtree, feature_names=features, class_names=['Low Risk', 'High Risk'], ax=ax, filled=True, rounded=True, fontsize=10)
+    st.pyplot(fig)
+
 except FileNotFoundError:
     st.error("❌ **ไม่พบไฟล์ 'Medicaldataset_converted.csv'** กรุณาตรวจสอบว่าไฟล์อยู่ในโฟลเดอร์ `data/` และชื่อไฟล์ถูกต้อง")
-    st.stop() # Stop the app if file is not found
-
-# --- Visualization Section ---
-st.markdown("---")
-st.subheader("📈 การสำรวจข้อมูล (Data Exploration)")
-st.info("ใช้กราฟด้านล่างเพื่อดูการกระจายของข้อมูลแต่ละฟีเจอร์")
-
-feature = st.selectbox(
-    "เลือกฟีเจอร์เพื่อดูการกระจายข้อมูล", 
-    dt.columns[:-1],
-    help="เลือกฟีเจอร์เพื่อดูว่าค่าของฟีเจอร์นั้นๆ มีการกระจายตัวอย่างไรเมื่อเทียบกับผลลัพธ์ (Result)"
-)
-
-# Boxplot
-st.write(f"#### 🎯 Boxplot: แสดงการกระจายของฟีเจอร์ '{feature}'")
-fig, ax = plt.subplots(figsize=(8, 6))
-sns.boxplot(data=dt, x='Result', y=feature, ax=ax)
-ax.set_title(f'Boxplot ของ {feature} เทียบกับผลลัพธ์', fontsize=16)
-ax.set_xlabel('Result (0: ไม่มี, 1: มี)', fontsize=12)
-ax.set_ylabel(feature, fontsize=12)
-st.pyplot(fig)
-
-# Pairplot (Optional)
-st.markdown("---")
-if st.checkbox("แสดง Pairplot เพื่อดูความสัมพันธ์ของทุกฟีเจอร์ (อาจใช้เวลาโหลดสักครู่)"):
-    st.write("#### 🌺 Pairplot: ความสัมพันธ์ระหว่างฟีเจอร์ทั้งหมด")
-    st.warning("การแสดงกราฟนี้อาจใช้เวลาประมวลผลนาน หากชุดข้อมูลมีขนาดใหญ่")
-    with st.spinner('กำลังสร้าง Pairplot...'):
-        fig2 = sns.pairplot(dt, hue='Result')
-        st.pyplot(fig2)
-
-# --- Prediction Section ---
-st.markdown("---")
-st.header("🔮 ทำนายผลความเสี่ยงโรคหัวใจวาย")
-st.info("กรุณาป้อนข้อมูลของคุณในช่องด้านล่างเพื่อรับการทำนาย")
-
-# Dictionary for mapping English column names to Thai labels
-feature_labels = {
-    'Age': 'อายุ', 'Gender': 'เพศ', 'Heart rate': 'อัตราการเต้นของหัวใจ (ครั้ง/นาที)',
-    'Systolic blood pressure': 'ความดันโลหิตตัวบน (mmHg)', 'Diastolic blood pressure': 'ความดันโลหิตตัวล่าง (mmHg)',
-    'Blood sugar': 'น้ำตาลในเลือด (mg/dL)', 'CK-MB': 'CK-MB (ng/mL)', 'Troponin': 'โทรโปนิน (ng/mL)'
-}
-
-# Create input fields using columns for better layout
-user_input = {}
-cols = st.columns(2)
-
-for i, feature in enumerate(dt.columns[:-1]):
-    with cols[i % 2]:
-        label_text = feature_labels.get(feature, feature)
-        if feature == 'Gender':
-            gender_options = {'ชาย': 0, 'หญิง': 1}
-            selected_gender = st.selectbox(
-                f'กรุณาเลือกข้อมูล: {label_text}',
-                options=list(gender_options.keys()),
-                key=f"input_{feature}"
-            )
-            user_input[feature] = gender_options[selected_gender]
-        else:
-            user_input[feature] = st.number_input(
-                f'กรุณาป้อนค่าสำหรับ: **{label_text}**', 
-                value=0.0,
-                key=f"input_{feature}"
-            )
-
-# Prediction button and result display
-st.markdown("---")
-if st.button("🌟 ทำนายผล", type="primary"):
-    X = dt.drop('Result', axis=1)
-    y = dt.Result
-
-    Knn_model = KNeighborsClassifier(n_neighbors=3)
-    Knn_model.fit(X, y)
-    
-    x_input = np.array([[user_input[feature] for feature in X.columns]])
-
-    prediction = Knn_model.predict(x_input)
-    st.subheader("✅ ผลการทำนาย:")
-    
-    if prediction[0] == 1:
-        st.error('⚠️ **คุณมีความเสี่ยงที่จะเป็นโรคหัวใจวาย**')
-        st.markdown("ขอแนะนำให้ปรึกษาแพทย์ผู้เชี่ยวชาญเพื่อยืนยันผลและรับคำแนะนำที่ถูกต้อง")
-    else:
-        st.success('🟢 **คุณไม่มีความเสี่ยงที่จะเป็นโรคหัวใจวาย**')
-        st.markdown("อย่างไรก็ตาม การดูแลสุขภาพอย่างสม่ำเสมอเป็นสิ่งสำคัญ")
+except KeyError as e:
+    st.error(f"❌ **เกิดข้อผิดพลาด: ไม่พบคอลัมน์ '{e}'** ในไฟล์ CSV ของคุณ กรุณาตรวจสอบว่าชื่อคอลัมน์ในโค้ดตรงกับในไฟล์ข้อมูล")
+except Exception as e:
+    st.error(f"❌ **เกิดข้อผิดพลาด**: {e}")
