@@ -1,4 +1,4 @@
-mport pandas as pd
+import pandas as pd
 import streamlit as st
 from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
@@ -61,10 +61,9 @@ try:
         gender_options = {'ชาย': 0, 'หญิง': 1}
         selected_gender = st.selectbox(f'ป้อนค่าสำหรับ: {feature_labels["Gender"]}', options=list(gender_options.keys()))
         user_input['Gender'] = gender_options[selected_gender]
-        # แก้ไขให้ไม่มีทศนิยมโดยเปลี่ยน min_value, value และเพิ่ม step=1
-        user_input['Blood sugar'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Blood sugar"]}', min_value=0, value=90, step=1)
-        user_input['CK-MB'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["CK-MB"]}', min_value=0, value=0, step=1)
-        user_input['Troponin'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Troponin"]}', min_value=0, value=0, step=1)
+        user_input['Blood sugar'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Blood sugar"]}', min_value=0.0, value=90.0)
+        user_input['CK-MB'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["CK-MB"]}', min_value=0.0, value=0.0)
+        user_input['Troponin'] = st.number_input(f'ป้อนค่าสำหรับ: {feature_labels["Troponin"]}', min_value=0.0, value=0.0)
 
     if st.button("พยากรณ์ผล", type="primary"):
         x_input = [[user_input[feature] for feature in features]]
